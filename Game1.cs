@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Game_1
 {
@@ -18,7 +19,7 @@ namespace Game_1
         Camera camera = new Camera();
         Floor floor;
         Player player;
-        Enemy enemy;
+        List<Enemy> enemies =new List<Enemy>();
         List<Bullet> bullets = new List<Bullet>();
         Dictionary<ModelMeshPart, Vector3> partColor = new Dictionary<ModelMeshPart, Vector3>();
         RenderTarget2D renderTarget;
@@ -27,6 +28,11 @@ namespace Game_1
         Effect effect;
         Effect postEffect;
         SpriteBatch spriteBatch;
+        int next = 0;
+        bool effects = false;
+        bool mPressed = false;
+        bool nPressed = false;
+        bool tilt = true;
 
         public Game1()
         {
@@ -51,7 +57,6 @@ namespace Game_1
             // TODO: Add your initialization logic here
             floor = new Floor(this.graphics.GraphicsDevice);
             player = new Player();
-            enemy = new Enemy();
             game = new RenderTarget2D(
                 GraphicsDevice,
                 GraphicsDevice.PresentationParameters.BackBufferWidth,
@@ -60,6 +65,10 @@ namespace Game_1
                 GraphicsDevice.PresentationParameters.BackBufferFormat,
                 DepthFormat.Depth24);
 
+            enemies.Add(new Enemy() { Position = new Vector2(-20, -20) });
+            enemies.Add(new Enemy() { Position = new Vector2(20, -20) });
+            enemies.Add(new Enemy() { Position = new Vector2(20, 20) });
+            enemies.Add(new Enemy() { Position = new Vector2(-20, 20) });
             base.Initialize();
         }
 
@@ -124,7 +133,11 @@ namespace Game_1
             // TODO: Add your update logic here
 
             player.Update(gameTime, this);
-            enemy.Update(gameTime);
+            foreach (var enemy in enemies)
+            {
+                enemy.Update(gameTime, player);
+            }
+
             foreach (var bullet in bullets)
             {
                bullet.Update(gameTime);
@@ -132,39 +145,109 @@ namespace Game_1
 
             bullets.RemoveAll(x => x.Time <= 0);
             CheckCollisions();
+
             var keyState = Keyboard.GetState();
             if (keyState.IsKeyDown(Keys.M))
             {
-                postEffect.CurrentTechnique = postEffect.Techniques[0];
+                if (!mPressed)
+                {
+                    if (tilt)
+                    {
+                        postEffect.CurrentTechnique = postEffect.Techniques[1];
+                        tilt = false;
+                    }
+                    else
+                    {
+                        postEffect.CurrentTechnique = postEffect.Techniques[0];
+                        tilt = true;
+                    }
+
+                    mPressed = true;
+                }
             }
             else
             {
-                postEffect.CurrentTechnique = postEffect.Techniques[1];
+                mPressed = false;
+            }
 
+            if(keyState.IsKeyDown(Keys.N))
+            {
+                if (!nPressed)
+                {
+                    effects = !effects;
+                    nPressed = true;
+                }
+            }
+            else
+            {
+                nPressed = false;
             }
             base.Update(gameTime);
         }
 
         private void CheckCollisions()
         {
-            if (enemy.Dead)
+            bool spawnNew = false;
+            foreach (var enemy in enemies)
             {
-                return;
+                if (enemy.Dead)
+                {
+                    continue;
+                }
+
+                float distance = Vector2.Distance(player.Position, enemy.Position);
+                if (distance < 1)
+                {
+                    enemy.OnColision(player.Position);
+                    spawnNew = true; ;
+                }
+
+                foreach (var bullet in bullets)
+                {
+                    float distance2 = Vector2.Distance(bullet.Position, enemy.Position);
+                    if (distance2 < 0.5f)
+                    {
+                        enemy.OnColision(bullet.Position);
+                        bullets.Remove(bullet);
+                        spawnNew = true;
+                        break;
+                    }
+                }
             }
 
-            float distance = Vector2.Distance(player.Position, enemy.Position); 
-            if(distance < 1)
+            if(spawnNew)
             {
-                enemy.OnColision(player.Position);
-            }
-            foreach (var bullet in bullets)
-            {
-                float distance2 = Vector2.Distance(bullet.Position, enemy.Position);
-                if(distance2 < 0.5f)
+                Random random = new Random();
+                for (int i = 0; i < 2; i++)
                 {
-                    enemy.OnColision(bullet.Position);
-                    bullets.Remove(bullet);
-                    break;
+                    var enemy = new Enemy();
+                    int val = next % 4;
+                    switch (val)
+                    {
+                        case 0:
+                            {
+                                enemy.Position = new Vector2(-20, -20);
+                            }
+                            break;
+                        case 1:
+                            {
+                                enemy.Position = new Vector2(-20, 20);
+                            }
+                            break;
+                        case 2:
+                            {
+                                enemy.Position = new Vector2(20, 20);
+                            }
+                            break;
+                        case 3:
+                            {
+                                enemy.Position = new Vector2(20, -20);
+                            }
+                            break;
+                    }
+                    next++;
+
+                    enemies.Add(enemy);
                 }
             }
         }
@@ -176,36 +259,45 @@ namespace Game_1
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-
             var projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45), 16 / 9, 0.1f, 100f);
             // TODO: Add your drawing code here
-            Vector3 lightPos = new Vector3(10, 7, 10);
+            Vector3 lightPos = new Vector3(10, 8, 10);
             var lightsView = Matrix.CreateLookAt(lightPos, new Vector3(-30, 0, -30), Vector3.Up);
             var lightsProjection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(120), 1f, 1, 1000f);
             float lightPower = 0.7f;
 
-            /// Shadow map
-            GraphicsDevice.SetRenderTarget(renderTarget);
-            GraphicsDevice.Clear(Color.Black);
-            effect.CurrentTechnique = effect.Techniques[1];
-            DrawGame(projection, lightPos, lightsView, lightsProjection, lightPower);
+            if (effects)
+            {
+                /// Shadow map
+                GraphicsDevice.SetRenderTarget(renderTarget);
+                GraphicsDevice.Clear(Color.Black);
+                effect.CurrentTechnique = effect.Techniques[1];
+                DrawGame(projection, lightPos, lightsView, lightsProjection, lightPower);
 
-            GraphicsDevice.SetRenderTarget(game);
-            shadowMap = renderTarget;
-            /// Game
-            GraphicsDevice.Clear(Color.Black);
-            GraphicsDevice.DepthStencilState = new DepthStencilState() { DepthBufferEnable = true };
-            effect.CurrentTechnique = effect.Techniques[2];
-            effect.Parameters["ShadowMap"].SetValue(shadowMap);
-            DrawGame(projection, lightPos, lightsView, lightsProjection, lightPower);
-            GraphicsDevice.SetRenderTarget(null);
-            Texture2D texture2D = game;
-            GraphicsDevice.Clear(Color.Black);
-            spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque,
-                SamplerState.LinearClamp, DepthStencilState.Default,
-                RasterizerState.CullNone, postEffect);
-            spriteBatch.Draw(game, GraphicsDevice.PresentationParameters.Bounds, Color.White);
-            spriteBatch.End();
+                GraphicsDevice.SetRenderTarget(game);
+                shadowMap = renderTarget;
+                /// Game
+                GraphicsDevice.Clear(Color.Black);
+                GraphicsDevice.DepthStencilState = new DepthStencilState() { DepthBufferEnable = true };
+                effect.CurrentTechnique = effect.Techniques[2];
+                effect.Parameters["ShadowMap"].SetValue(shadowMap);
+                DrawGame(projection, lightPos, lightsView, lightsProjection, lightPower);
+                GraphicsDevice.SetRenderTarget(null);
+                Texture2D texture2D = game;
+                GraphicsDevice.Clear(Color.Black);
+                spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque,
+                    SamplerState.LinearClamp, DepthStencilState.Default,
+                    RasterizerState.CullNone, postEffect);
+                spriteBatch.Draw(game, GraphicsDevice.PresentationParameters.Bounds, Color.White);
+                spriteBatch.End();
+            }
+            else
+            {
+                GraphicsDevice.SetRenderTarget(null);
+                GraphicsDevice.Clear(Color.Black);
+                effect.CurrentTechnique = effect.Techniques[0];
+                DrawGame(projection, lightPos, lightsView, lightsProjection, lightPower);
+            }
 
 
             base.Draw(gameTime);
@@ -224,29 +316,33 @@ namespace Game_1
                     part.Effect.Parameters["DeffuseColor"].SetValue(partColor[part]);
                     part.Effect.Parameters["LightWorldViewProjection"].SetValue(player.Rotation * transMatrix * lightsView * lightsProjection);
                 }
+
                 model.Draw();
             }
 
-            foreach (var model in elf.Meshes)
+            foreach (var enemy in enemies)
             {
-                Matrix transMatrix;
-                if(enemy.Dead && effect.CurrentTechnique == effect.Techniques[2])
+                foreach (var model in elf.Meshes)
                 {
-                    transMatrix = Matrix.CreateTranslation(enemy.Position.X, 1f, enemy.Position.Y);
-                }
-                else
-                {
-                    transMatrix = Matrix.CreateTranslation(enemy.Position.X, 0, enemy.Position.Y);
-                }
+                    Matrix transMatrix;
+                    if (enemy.Dead && effect.CurrentTechnique != effect.Techniques[1])
+                    {
+                        transMatrix = Matrix.CreateTranslation(enemy.Position.X, 1f, enemy.Position.Y);
+                    }
+                    else
+                    {
+                        transMatrix = Matrix.CreateTranslation(enemy.Position.X, 0, enemy.Position.Y);
+                    }
 
-                foreach (var part in model.MeshParts)
-                {
-                    part.Effect.Parameters["World"].SetValue(enemy.Rotation * transMatrix);
-                    part.Effect.Parameters["DeffuseColor"].SetValue(partColor[part]);
-                    part.Effect.Parameters["LightWorldViewProjection"].SetValue(enemy.Rotation * transMatrix * lightsView * lightsProjection);
-                }
+                    foreach (var part in model.MeshParts)
+                    {
+                        part.Effect.Parameters["World"].SetValue(enemy.Rotation * transMatrix);
+                        part.Effect.Parameters["DeffuseColor"].SetValue(partColor[part]);
+                        part.Effect.Parameters["LightWorldViewProjection"].SetValue(enemy.Rotation * transMatrix * lightsView * lightsProjection);
+                    }
 
-                model.Draw();
+                    model.Draw();
+                }
             }
 
             foreach (var bullet in bullets)

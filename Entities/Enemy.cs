@@ -16,15 +16,24 @@ namespace Game_1.Entities
         float fallSpeed = 2;
         Vector2 hitPos;
         int falls = 1;
+        float moveSpeed = 0.001f;
 
-        public bool Dead { get => Dead1; set => Dead1 = value; }
+        public bool Dead { get => dead; set => dead = value; }
         public Vector2 Position { get => position; set => position = value; }
         public Matrix Rotation { get => rotation; set => rotation = value; }
-        public bool Dead1 { get => dead; set => dead = value; }
 
-        public void Update(GameTime gameTime)
+        public void Update(GameTime gameTime, Player player)
         {
-            if(Dead1 && angel != 90)
+            if(!Dead)
+            {
+                var move = player.Position - this.position;
+                move.Normalize();
+                position += move * moveSpeed * (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+                var angle = -(float)Math.Atan2(move.Y, move.X) - MathHelper.PiOver2 ;
+                Rotation = Matrix.CreateRotationY(angle);
+            }
+
+            if (Dead && angel != 90)
             {
                 angel += (float)gameTime.ElapsedGameTime.TotalMilliseconds / 1000 * 90 * fallSpeed;
                 angel = MathHelper.Clamp(angel, 0, 90);
@@ -42,9 +51,9 @@ namespace Game_1.Entities
 
         public void OnColision(Vector2 pos)
         {
-            if (!Dead1)
+            if (!Dead)
             {
-                Dead1 = true;
+                Dead = true;
                 hitPos = pos - this.position;
                 hitPos.Normalize();
             }

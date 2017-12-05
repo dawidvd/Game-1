@@ -28,11 +28,13 @@ namespace Game_1
         Effect effect;
         Effect postEffect;
         SpriteBatch spriteBatch;
+        SpriteFont font;
         int next = 0;
         bool effects = false;
         bool mPressed = false;
         bool nPressed = false;
         bool tilt = true;
+        PointSystem pointSystem = new PointSystem();
 
         public Game1()
         {
@@ -85,6 +87,7 @@ namespace Game_1
             this.elf = this.Content.Load<Model>("elf");
             effect = this.Content.Load<Effect>("shader");
             postEffect = this.Content.Load<Effect>("postEffect");
+            font = this.Content.Load<SpriteFont>("font");
             foreach (var mesh in this.snowmanModel.Meshes)
             {
                 foreach (var part in mesh.MeshParts)
@@ -182,6 +185,8 @@ namespace Game_1
             {
                 nPressed = false;
             }
+
+            pointSystem.UpdateScore(gameTime);
             base.Update(gameTime);
         }
 
@@ -210,6 +215,7 @@ namespace Game_1
                         enemy.OnColision(bullet.Position);
                         bullets.Remove(bullet);
                         spawnNew = true;
+                        pointSystem.GainPoint();
                         break;
                     }
                 }
@@ -290,6 +296,8 @@ namespace Game_1
                     RasterizerState.CullNone, postEffect);
                 spriteBatch.Draw(game, GraphicsDevice.PresentationParameters.Bounds, Color.White);
                 spriteBatch.End();
+                GraphicsDevice.BlendState = BlendState.Opaque;
+                GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             }
             else
             {
@@ -299,6 +307,12 @@ namespace Game_1
                 DrawGame(projection, lightPos, lightsView, lightsProjection, lightPower);
             }
 
+            spriteBatch.Begin();
+            spriteBatch.DrawString(font, "x" + pointSystem.KillMultiplier, Vector2.Zero, Color.Red);
+            spriteBatch.DrawString(font, pointSystem.Points.ToString(), new Vector2(GraphicsDevice.Viewport.Width/2, 0), Color.White);
+            spriteBatch.End();
+            GraphicsDevice.BlendState = BlendState.Opaque;
+            GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
             base.Draw(gameTime);
         }

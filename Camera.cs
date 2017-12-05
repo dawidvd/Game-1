@@ -25,7 +25,6 @@ namespace Game_1
                 //Now we can create out viewmatrix. No need to use a transformed "up" unless it's not going to be upside down or something.
                 return Matrix.CreateLookAt(rotatedOffste, FocusPoint, Vector3.Up);
             }
-
         }
     }
 }

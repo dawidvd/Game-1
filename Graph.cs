@@ -148,7 +148,7 @@ namespace Game_1
         {
             int str = (int)Math.Round(start.X) + width/2 + (int)(Math.Round(start.Y + height /2)) * width;
             int fin = (int)Math.Round(finish.X) + width/2 + (int)(Math.Round(finish.Y + height/2)) * width;
-            if (str > graph.Length - 1 || str < 0 || fin > graph.Length - 1 || fin < 0)
+            if (str > graph.GetLength(0) - 1 || str < 0 || fin > graph.GetLength(1) - 1 || fin < 0)
             {
                 return false;
             }

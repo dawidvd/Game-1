@@ -68,7 +68,7 @@ namespace Game_1
             graphics.PreferredBackBufferHeight= GraphicsDevice.DisplayMode.Height;
             graphics.PreferredBackBufferWidth= GraphicsDevice.DisplayMode.Width;
             graphics.IsFullScreen = true;
-            //graphics.ApplyChanges();
+            graphics.ApplyChanges();
             // TODO: Add your initialization logic here
             floor = new Floor(this.graphics.GraphicsDevice);
             player = new Player(graph);
@@ -262,14 +262,6 @@ namespace Game_1
                 }
 
                 pointSystem.UpdateScore(gameTime);
-                var camV = new Vector2(camera.FocusPoint.X, camera.FocusPoint.Z);
-                if ((camV - player.Position).Length() > 0.3f)
-                {
-                    var dist = -camV + player.Position;
-                    dist.Normalize();
-                    camera.FocusPoint.X += dist.X * 0.02f;
-                    camera.FocusPoint.Z += dist.Y * 0.02f;
-                }
             }
             base.Update(gameTime);
         }
@@ -588,7 +580,6 @@ namespace Game_1
             enemyCount = 0;
             maxEnemyCount = 4;
             this.key = true;
-            camera.FocusPoint = new Vector3();
         }
 
         private void NextLevel()
@@ -601,7 +592,6 @@ namespace Game_1
             floor.ChangeColor(level);
             enemyCount = 0;
             maxEnemyCount *= 2;
-            camera.FocusPoint = new Vector3();
         }
     }
 }

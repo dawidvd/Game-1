@@ -519,6 +519,7 @@ namespace Game_1
 
             foreach (var enemy in enemies)
             {
+                var bb = elf.GetBoundingBox();
                 foreach (var model in elf.Meshes)
                 {
                     Matrix transMatrix;
@@ -533,7 +534,7 @@ namespace Game_1
 
                     foreach (var part in model.MeshParts)
                     {
-                        part.Effect.Parameters["World"].SetValue(enemy.Rotation * transMatrix);
+                        part.Effect.Parameters["World"].SetValue(Matrix.CreateTranslation(-(bb.Max.X - bb.Min.X)/2, 0, -(bb.Max.Z - bb.Min.Z)/2)*enemy.Rotation * transMatrix);
                         part.Effect.Parameters["DeffuseColor"].SetValue(partColor[part]);
                         part.Effect.Parameters["LightWorldViewProjection"].SetValue(enemy.Rotation * transMatrix * lightsView * lightsProjection);
                     }

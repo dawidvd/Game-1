@@ -50,12 +50,12 @@ namespace Game_1
                     graph[i, i + width] = 1;
                     if (x > 0)
                     {
-                        graph[i, i + width - 1] = 1.41f;
+                        graph[i, i + width - 1] = 1.4f;
                     }
 
                     if (x < width - 1)
                     {
-                        graph[i, i + 1] = 1.41f;
+                        graph[i, i + 1] = 1.4f;
                     }
                 }
             }

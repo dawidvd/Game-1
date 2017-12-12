@@ -26,6 +26,7 @@ namespace Game_1
         RenderTarget2D renderTarget;
         RenderTarget2D game;
         Texture2D shadowMap;
+        Texture2D keysTexture;
         Effect effect;
         Effect postEffect;
         SpriteBatch spriteBatch;
@@ -39,6 +40,7 @@ namespace Game_1
         Graph graph = new Graph(22, 22, 1);
         Matrix crateMatrix;
         bool menu = true;
+        bool key = false;
         bool inProggress = false;
         bool gameOver = false;
         int level = 1;
@@ -96,6 +98,7 @@ namespace Game_1
             postEffect = this.Content.Load<Effect>("postEffect");
             font = this.Content.Load<SpriteFont>("font");
             floor.Texture = this.Content.Load<Texture2D>("sand");
+            keysTexture = this.Content.Load<Texture2D>("keys");
             foreach (var mesh in this.snowmanModel.Meshes)
             {
                 foreach (var part in mesh.MeshParts)
@@ -186,6 +189,13 @@ namespace Game_1
                             Exit();
                         }
                     }
+                }
+            }
+            else if(key)
+            {
+                if(Keyboard.GetState().IsKeyDown(Keys.Space))
+                {
+                    key = false;
                 }
             }
             else
@@ -335,7 +345,7 @@ namespace Game_1
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            if (!menu)
+            if (!menu && !key)
             {
                 this.IsMouseVisible = false;
                 var projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45), 16 / 9, 0.1f, 100f);
@@ -393,7 +403,7 @@ namespace Game_1
                 GraphicsDevice.BlendState = BlendState.Opaque;
                 GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             }
-            else
+            else if (menu)
             {
                 GraphicsDevice.Clear(Color.Black);
                 this.IsMouseVisible = true;
@@ -411,6 +421,17 @@ namespace Game_1
                 spriteBatch.End();
                 GraphicsDevice.BlendState = BlendState.Opaque;
                 GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+
+            }
+            else if(key)
+            {
+                GraphicsDevice.Clear(Color.Black);
+                this.IsMouseVisible = false;
+                var str = "Press space to play";
+                spriteBatch.Begin();
+                spriteBatch.Draw(this.keysTexture, new Rectangle(0,0,GraphicsDevice.Viewport.Width, (int)(GraphicsDevice.Viewport.Height - font.MeasureString(str).Y * 2)), Color.White);
+                spriteBatch.DrawString(font,str, new Vector2(GraphicsDevice.Viewport.Width / 2 - font.MeasureString(str).X / 2, GraphicsDevice.Viewport.Height - font.MeasureString(str).Y), Color.Gray);
+                spriteBatch.End();
 
             }
 
@@ -518,6 +539,7 @@ namespace Game_1
             Enemy.Level = 1;
             enemyCount = 0;
             maxEnemyCount = 4;
+            this.key = true;
         }
 
         private void NextLevel()

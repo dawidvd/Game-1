@@ -91,11 +91,11 @@ namespace Game_1.Entities
                 }
             }
 
-            if(keyState.IsKeyDown(Keys.D1))
+            if(keyState.IsKeyDown(Keys.E))
             {
                 weapon = 0;
             }
-            else if(keyState.IsKeyDown(Keys.D2))
+            else if(keyState.IsKeyDown(Keys.Q))
             {
                 weapon = 1;
             }

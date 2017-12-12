@@ -13,14 +13,13 @@ namespace Game_1.Entities
         Vector2 position;
         float speed = 0.01f;
         double time;
-        double maxTime = 0.5;
 
 
         public Matrix Rotation { get => rotation; private set => rotation = value; }
         public Vector2 Position { get => position; private set => position = value; }
         public double Time { get => time; set => time = value; }
 
-        public void Respawn(Vector2 position, Matrix rotation)
+        public void Respawn(Vector2 position, Matrix rotation, double maxTime = 0.5)
         {
             this.position = position;
             this.rotation = rotation;

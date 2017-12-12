@@ -14,6 +14,8 @@ namespace Game_1.Entities
         private Matrix rotation;
         float speed = 0.002f;
         bool shooting = false;
+        int weapon = 0;
+        int count = 0;
 
         public Player(Graph graph)
         {
@@ -67,24 +69,44 @@ namespace Game_1.Entities
                     rotation.M43 = 0;
                     position += moveVector * speed * (float)time.ElapsedGameTime.TotalMilliseconds;
                 }
-                else
-                {
+            }
 
-                }
+            if(keyState.IsKeyDown(Keys.D1))
+            {
+                weapon = 0;
+            }
+            else if(keyState.IsKeyDown(Keys.D2))
+            {
+                weapon = 1;
             }
 
             if(keyState.IsKeyDown(Keys.Space))
             {
-                if (shooting)
-                    return;
-                game.AddBullet(this.position, this.rotation);
-                game.AddBullet(this.position, Matrix.CreateRotationY(MathHelper.ToRadians(30)) * this.rotation);
-                game.AddBullet(this.position, Matrix.CreateRotationY(MathHelper.ToRadians(-30)) * this.rotation);
-                shooting = true;
+                if (weapon == 0)
+                {
+                    if (shooting)
+                        return;
+                    game.AddBullet(this.position, this.rotation);
+                    game.AddBullet(this.position, Matrix.CreateRotationY(MathHelper.ToRadians(30)) * this.rotation);
+                    game.AddBullet(this.position, Matrix.CreateRotationY(MathHelper.ToRadians(-30)) * this.rotation);
+                    shooting = true;
+                }
+                else if(weapon == 1)
+                {
+                    if (shooting)
+                        return;
+                    game.AddBullet(this.position, this.rotation, 2);
+                    count++;
+                    if(count > 30)
+                    {
+                        shooting = true;
+                    }
+                }
             }
             else if (shooting)
             {
                 shooting = false;
+                count = 0;
             }
         }
     }

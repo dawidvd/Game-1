@@ -40,6 +40,7 @@ namespace Game_1
         Matrix crateMatrix;
         bool menu = true;
         bool inProggress = false;
+        bool gameOver = false;
 
         public Game1()
         {
@@ -154,6 +155,7 @@ namespace Game_1
                             /// Easy
                             menu = false;
                             pointSystem.Multiplier = 1;
+                            Enemy.LifetMultiplier = 1;
                             inProggress = true;
                             Restart();
                         }
@@ -162,6 +164,7 @@ namespace Game_1
                             /// medium
                             menu = false;
                             pointSystem.Multiplier = 2;
+                            Enemy.LifetMultiplier = 2;
                             inProggress = true;
                             Restart();
                         }
@@ -170,6 +173,7 @@ namespace Game_1
                             /// hard
                             menu = false;
                             pointSystem.Multiplier = 3;
+                            Enemy.LifetMultiplier = 3;
                             inProggress = true;
                             Restart();
                         }
@@ -182,6 +186,10 @@ namespace Game_1
             }
             else
             {
+                if(gameOver)
+                {
+                    return;
+                }
                 player.Update(gameTime, this);
                 foreach (var enemy in enemies)
                 {
@@ -249,10 +257,9 @@ namespace Game_1
                 }
 
                 float distance = Vector2.Distance(player.Position, enemy.Position);
-                if (distance < 1)
+                if (distance < 0.2)
                 {
-                    enemy.OnColision(player.Position);
-                    spawnNew = true; ;
+                    gameOver = true;
                 }
 
                 foreach (var bullet in bullets)
@@ -262,8 +269,12 @@ namespace Game_1
                     {
                         enemy.OnColision(bullet.Position);
                         bullets.Remove(bullet);
-                        spawnNew = true;
-                        pointSystem.GainPoint();
+                        if (enemy.Dead)
+                        {
+                            spawnNew = true;
+                            pointSystem.GainPoint();
+                        }
+
                         break;
                     }
                 }
@@ -272,7 +283,7 @@ namespace Game_1
             if(spawnNew)
             {
                 Random random = new Random();
-                for (int i = 0; i < 2; i++)
+                for (int i = 0; i < 1; i++)
                 {
                     var enemy = new Enemy(graph);
                     int val = next % 4;
@@ -361,6 +372,10 @@ namespace Game_1
                 spriteBatch.Begin();
                 spriteBatch.DrawString(font, "x" + pointSystem.KillMultiplier, Vector2.Zero, Color.Red);
                 spriteBatch.DrawString(font, pointSystem.Points.ToString(), new Vector2(GraphicsDevice.Viewport.Width / 2, 0), Color.White);
+                if(gameOver)
+                {
+                    spriteBatch.DrawString(font, "GAME OVER", new Vector2(GraphicsDevice.Viewport.Width / 2 - font.MeasureString("GAME OVER").X/2, 350), Color.Red);
+                }
                 spriteBatch.End();
                 GraphicsDevice.BlendState = BlendState.Opaque;
                 GraphicsDevice.DepthStencilState = DepthStencilState.Default;
@@ -463,10 +478,10 @@ namespace Game_1
         }
 
 
-        public void AddBullet(Vector2 positon, Matrix rotation)
+        public void AddBullet(Vector2 positon, Matrix rotation, double maxTime = 0.5)
         {
             var bullet = new Bullet();
-            bullet.Respawn(positon, rotation);
+            bullet.Respawn(positon, rotation, maxTime);
             bullets.Add(bullet);
         }
 
@@ -478,6 +493,7 @@ namespace Game_1
             bullets.Clear();
             enemies.Clear();
             enemies.Add(new Enemy(graph) { Position = new Vector2(-10, 10) });
+            gameOver = false;
         }
     }
 }

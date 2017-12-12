@@ -21,6 +21,8 @@ namespace Game_1.Entities
         List<Vector2> path;
         Vector2 playerPosition = new Vector2(float.PositiveInfinity, float.PositiveInfinity);
         Vector2 nextPoint;
+        int life = 1;
+        int hits = 0;
 
         public Enemy(Graph graph)
         {
@@ -30,7 +32,8 @@ namespace Game_1.Entities
         public bool Dead { get => dead; set => dead = value; }
         public Vector2 Position { get => position; set => position = value; }
         public Matrix Rotation { get => rotation; set => rotation = value; }
-        
+        static public float LifetMultiplier { get; set; } = 1;
+
 
         public void Update(GameTime gameTime, Player player)
         {
@@ -92,9 +95,13 @@ namespace Game_1.Entities
         {
             if (!Dead)
             {
-                Dead = true;
-                hitPos = pos - this.position;
-                hitPos.Normalize();
+                hits++;
+                if (hits > LifetMultiplier * life)
+                {
+                    Dead = true;
+                    hitPos = pos - this.position;
+                    hitPos.Normalize();
+                }
             }
         }
     }

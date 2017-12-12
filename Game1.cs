@@ -382,6 +382,8 @@ namespace Game_1
                 spriteBatch.Begin();
                 spriteBatch.DrawString(font, "x" + pointSystem.KillMultiplier, Vector2.Zero, Color.Red);
                 spriteBatch.DrawString(font, pointSystem.Points.ToString(), new Vector2(GraphicsDevice.Viewport.Width / 2, 0), Color.White);
+                string kills = string.Format("{0,2}\\{1,2}", enemyCount, maxEnemyCount);
+                spriteBatch.DrawString(font, kills, new Vector2(GraphicsDevice.Viewport.Width - font.MeasureString(kills).X - 20, 0), Color.White);
                 if(gameOver)
                 {
                     spriteBatch.DrawString(font, "GAME OVER", new Vector2(GraphicsDevice.Viewport.Width / 2 - font.MeasureString("GAME OVER").X/2, 350), Color.Red);
@@ -507,6 +509,8 @@ namespace Game_1
             gameOver = false;
             level = 1;
             Enemy.Level = 1;
+            enemyCount = 0;
+            maxEnemyCount = 4;
         }
 
         private void NextLevel()
@@ -517,6 +521,8 @@ namespace Game_1
             bullets.Clear();
             player.Position = new Vector2();
             floor.ChangeColor(level);
+            enemyCount = 0;
+            maxEnemyCount *= 2;
         }
     }
 }

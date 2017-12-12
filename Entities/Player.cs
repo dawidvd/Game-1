@@ -37,11 +37,13 @@ namespace Game_1.Entities
             if(keyState.IsKeyDown(Keys.W))
             {
                 moveVector.Y -= 1;
+                moveVector.X -= 1;
                 move = true;
             }
 
             if(keyState.IsKeyDown(Keys.S))
             {
+                moveVector.X += 1;
                 moveVector.Y += 1;
                 move = true;
             }
@@ -49,12 +51,14 @@ namespace Game_1.Entities
             if(keyState.IsKeyDown(Keys.D))
             {
                 moveVector.X += 1;
+                moveVector.Y -= 1;
                 move = true;
             }
 
             if(keyState.IsKeyDown(Keys.A))
             {
                 moveVector.X -= 1;
+                moveVector.Y += 1;
                 move = true;
             }
 

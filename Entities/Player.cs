@@ -21,8 +21,29 @@ namespace Game_1.Entities
 
         private Graph graph;
 
-        public Vector2 Position { get => position; set => position = value; }
-        public Matrix Rotation { get => rotation; set => rotation = value; }
+        public Vector2 Position
+        {
+            get
+            {
+                return position;
+            }
+            set
+            {
+                position = value;
+            }
+        }
+        public Matrix Rotation
+        {
+            get
+            {
+                return
+                      rotation;
+            }
+            set
+            {
+                rotation = value;
+            }
+        }
 
         public void Update(GameTime time, Game1 game)
         {

@@ -15,9 +15,39 @@ namespace Game_1.Entities
         double time;
 
 
-        public Matrix Rotation { get => rotation; private set => rotation = value; }
-        public Vector2 Position { get => position; private set => position = value; }
-        public double Time { get => time; set => time = value; }
+        public Matrix Rotation
+        {
+            get
+            {
+                return rotation;
+            }
+            set
+            {
+                rotation = value;
+            }
+        }
+        public Vector2 Position
+        {
+            get
+            {
+                return position;
+            }
+            private set
+            {
+                position = value;
+            }
+        }
+        public double Time
+        {
+            get
+            {
+                return time;
+            }
+            set
+            {
+                time = value;
+            }
+        }
 
         public void Respawn(Vector2 position, Matrix rotation, double maxTime = 0.5)
         {

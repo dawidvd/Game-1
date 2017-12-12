@@ -95,6 +95,7 @@ namespace Game_1
             effect = this.Content.Load<Effect>("shader");
             postEffect = this.Content.Load<Effect>("postEffect");
             font = this.Content.Load<SpriteFont>("font");
+            floor.Texture = this.Content.Load<Texture2D>("sand");
             foreach (var mesh in this.snowmanModel.Meshes)
             {
                 foreach (var part in mesh.MeshParts)
@@ -418,7 +419,13 @@ namespace Game_1
 
         private void DrawGame(Matrix projection, Vector3 lightPos, Matrix lightsView, Matrix lightsProjection, float lightPower)
         {
-            floor.DrawGround(camera, projection, GraphicsDevice, effect, lightPos, lightsView, lightsProjection);
+            
+            effect.Parameters["View"].SetValue(camera.ViewMatrix);
+            effect.Parameters["Projection"].SetValue(projection);
+            effect.Parameters["LightPos"].SetValue(lightPos);
+            effect.Parameters["LightPower"].SetValue(0.9f);
+
+            floor.DrawGround(camera, projection, GraphicsDevice, lightPos, lightsView, lightsProjection);
             foreach (var model in snowmanModel.Meshes)
             {
                 var transMatrix = Matrix.CreateTranslation(player.Position.X, 0, player.Position.Y);

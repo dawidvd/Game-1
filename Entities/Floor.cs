@@ -14,7 +14,8 @@ namespace Game_1.Entities
         VertexPositionNormalTexture[] positionColor = new VertexPositionNormalTexture[6];
         Vector3 color;
         Color[] groundColors;
-        public Texture2D Texture { get; set; }
+        public Texture2D[] Texture { get; set; } = new Texture2D[3];
+        int index = 0;
 
         public Floor(GraphicsDevice graphicsDevice)
         {
@@ -26,19 +27,15 @@ namespace Game_1.Entities
             positionColor[5] = new VertexPositionNormalTexture(new Vector3(0, 0, height), Vector3.Up, new Vector2(0,1));
             groundColors = new Color[]
             {
-                Color.SandyBrown,
-                Color.Green,
-                Color.Yellow,
-                Color.Red,
-                Color.Wheat,
-                Color.BlueViolet
+                Color.White
             };
-            ChangeColor(0);
+            ChangeColor(1);
         }
 
         public void ChangeColor(int lvl)
         {
             ChangeColor(groundColors[lvl % groundColors.Length]);
+            index = lvl - 1;
         }
 
         public void ChangeColor(Color newColor)
@@ -52,7 +49,7 @@ namespace Game_1.Entities
             effect.Projection = projection;
             effect.View = camera.ViewMatrix;
             effect.World = Matrix.CreateTranslation(- width/2, 0, -height/2);
-            effect.Texture = Texture;
+            effect.Texture = Texture[index % Texture.Length];
             effect.TextureEnabled = true;
             effect.EnableDefaultLighting();
             effect.DirectionalLight0.Enabled = true;

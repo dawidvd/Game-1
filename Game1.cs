@@ -25,6 +25,7 @@ namespace Game_1
         Dictionary<ModelMeshPart, Vector3> partColor = new Dictionary<ModelMeshPart, Vector3>();
         RenderTarget2D renderTarget;
         RenderTarget2D game;
+        Texture2D gameOverTexture;
         Texture2D shadowMap;
         Texture2D keysTexture;
         Effect effect;
@@ -97,7 +98,10 @@ namespace Game_1
             effect = this.Content.Load<Effect>("shader");
             postEffect = this.Content.Load<Effect>("postEffect");
             font = this.Content.Load<SpriteFont>("font");
-            floor.Texture = this.Content.Load<Texture2D>("sand");
+            floor.Texture[0] = this.Content.Load<Texture2D>("sand");
+            floor.Texture[1] = this.Content.Load<Texture2D>("snow");
+            floor.Texture[2] = this.Content.Load<Texture2D>("grass");
+            gameOverTexture = this.Content.Load<Texture2D>("gameOver");
             keysTexture = this.Content.Load<Texture2D>("keys");
             foreach (var mesh in this.snowmanModel.Meshes)
             {
@@ -393,11 +397,11 @@ namespace Game_1
                 spriteBatch.Begin();
                 spriteBatch.DrawString(font, "x" + pointSystem.KillMultiplier, Vector2.Zero, Color.Red);
                 spriteBatch.DrawString(font, pointSystem.Points.ToString(), new Vector2(GraphicsDevice.Viewport.Width / 2, 0), Color.White);
-                string kills = string.Format("{0,2}\\{1,2}", enemyCount, maxEnemyCount);
+                string kills = string.Format("{0,2}\\{1,2}", enemyCount, maxEnemyCount + 1);
                 spriteBatch.DrawString(font, kills, new Vector2(GraphicsDevice.Viewport.Width - font.MeasureString(kills).X - 20, 0), Color.White);
                 if(gameOver)
                 {
-                    spriteBatch.DrawString(font, "GAME OVER", new Vector2(GraphicsDevice.Viewport.Width / 2 - font.MeasureString("GAME OVER").X/2, 350), Color.Red);
+                    spriteBatch.Draw(gameOverTexture, new Rectangle(GraphicsDevice.Viewport.Width / 2 - gameOverTexture.Width/2, GraphicsDevice.Viewport.Height /2 - gameOverTexture.Height / 2, gameOverTexture.Width, gameOverTexture.Height), Color.White);
                 }
                 spriteBatch.End();
                 GraphicsDevice.BlendState = BlendState.Opaque;
@@ -532,7 +536,7 @@ namespace Game_1
             player.Position = new Vector2();
             bullets.Clear();
             enemies.Clear();
-            floor.ChangeColor(0);
+            floor.ChangeColor(1);
             enemies.Add(new Enemy(graph) { Position = new Vector2(-10, 10) });
             gameOver = false;
             level = 1;

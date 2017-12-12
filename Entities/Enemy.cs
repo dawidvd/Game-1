@@ -29,9 +29,37 @@ namespace Game_1.Entities
             this.graph = graph;
         }
 
-        public bool Dead { get => dead; set => dead = value; }
-        public Vector2 Position { get => position; set => position = value; }
-        public Matrix Rotation { get => rotation; set => rotation = value; }
+        public bool Dead
+        {
+            get
+            {
+                return dead;
+            }
+
+            set
+            {
+                dead = value;
+            }
+        }
+        public Vector2 Position
+        {
+            get
+            {
+                return position;
+            }
+            set
+            {
+                position = value;
+            }
+        }
+        public Matrix Rotation
+        {
+            get { return rotation; }
+            set
+            {
+                rotation = value;
+            }
+        }
         static public float LifetMultiplier { get; set; } = 1;
         static public int Level { get; set; } = 1;
 

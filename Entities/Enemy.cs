@@ -33,6 +33,7 @@ namespace Game_1.Entities
         public Vector2 Position { get => position; set => position = value; }
         public Matrix Rotation { get => rotation; set => rotation = value; }
         static public float LifetMultiplier { get; set; } = 1;
+        static public int Level { get; set; } = 1;
 
 
         public void Update(GameTime gameTime, Player player)
@@ -96,7 +97,7 @@ namespace Game_1.Entities
             if (!Dead)
             {
                 hits++;
-                if (hits > LifetMultiplier * life)
+                if (hits > LifetMultiplier * (life + Level))
                 {
                     Dead = true;
                     hitPos = pos - this.position;

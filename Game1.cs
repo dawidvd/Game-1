@@ -41,6 +41,9 @@ namespace Game_1
         bool menu = true;
         bool inProggress = false;
         bool gameOver = false;
+        int level = 1;
+        int enemyCount = 0;
+        int maxEnemyCount = 4;
 
         public Game1()
         {
@@ -273,6 +276,7 @@ namespace Game_1
                         {
                             spawnNew = true;
                             pointSystem.GainPoint();
+                            enemyCount++;
                         }
 
                         break;
@@ -280,7 +284,13 @@ namespace Game_1
                 }
             }
 
-            if(spawnNew)
+            if (enemyCount > maxEnemyCount)
+            {
+                enemyCount = 0;
+                NextLevel();
+            }
+
+            if (spawnNew)
             {
                 Random random = new Random();
                 for (int i = 0; i < 1; i++)
@@ -492,8 +502,21 @@ namespace Game_1
             player.Position = new Vector2();
             bullets.Clear();
             enemies.Clear();
+            floor.ChangeColor(0);
             enemies.Add(new Enemy(graph) { Position = new Vector2(-10, 10) });
             gameOver = false;
+            level = 1;
+            Enemy.Level = 1;
+        }
+
+        private void NextLevel()
+        {
+            level++;
+            Enemy.Level = level;
+            enemies.Clear();
+            bullets.Clear();
+            player.Position = new Vector2();
+            floor.ChangeColor(level);
         }
     }
 }

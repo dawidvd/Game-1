@@ -12,6 +12,8 @@ namespace Game_1.Entities
     {
         int width = 50, height = 50;
         VertexPositionNormalTexture[] positionColor = new VertexPositionNormalTexture[6];
+        Vector3 color;
+        Color[] groundColors;
 
         public Floor(GraphicsDevice graphicsDevice)
         {
@@ -21,6 +23,26 @@ namespace Game_1.Entities
             positionColor[3] = new VertexPositionNormalTexture(new Vector3(width, 0, 0), Vector3.Up, new Vector2());
             positionColor[4] = new VertexPositionNormalTexture(new Vector3(width, 0, height), Vector3.Up, new Vector2());
             positionColor[5] = new VertexPositionNormalTexture(new Vector3(0, 0, height), Vector3.Up, new Vector2());
+            groundColors = new Color[]
+            {
+                Color.SandyBrown,
+                Color.Green,
+                Color.Yellow,
+                Color.Red,
+                Color.Wheat,
+                Color.BlueViolet
+            };
+            ChangeColor(0);
+        }
+
+        public void ChangeColor(int lvl)
+        {
+            ChangeColor(groundColors[lvl % groundColors.Length]);
+        }
+
+        public void ChangeColor(Color newColor)
+        {
+            color = new Vector3(newColor.R / 256f, newColor.G / 256f, newColor.B / 256f);
         }
 
         public void DrawGround(Camera camera, Matrix projection, GraphicsDevice graphicsDevice, Effect effect, Vector3 lightPos, Matrix lightsView, Matrix lightsProjection)
@@ -35,7 +57,7 @@ namespace Game_1.Entities
             effect.Parameters["World"].SetValue(world);
             effect.Parameters["View"].SetValue(camera.ViewMatrix);
             effect.Parameters["Projection"].SetValue(projection);
-            effect.Parameters["DeffuseColor"].SetValue(new Vector3(Color.SandyBrown.R/256f, Color.SandyBrown.G/256f, Color.SandyBrown.B/256f));
+            effect.Parameters["DeffuseColor"].SetValue(color);
             effect.Parameters["LightPos"].SetValue(lightPos);
             effect.Parameters["LightPower"].SetValue(0.9f);
             effect.Parameters["LightWorldViewProjection"].SetValue(world * lightsView * lightsProjection);

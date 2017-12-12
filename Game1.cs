@@ -16,6 +16,7 @@ namespace Game_1
         GraphicsDeviceManager graphics;
         Model snowmanModel;
         Model elf;
+        Model crate;
         Camera camera = new Camera();
         Floor floor;
         Player player;
@@ -35,6 +36,8 @@ namespace Game_1
         bool nPressed = false;
         bool tilt = true;
         PointSystem pointSystem = new PointSystem();
+        Graph graph = new Graph(22, 22, 1);
+        Matrix crateMatrix;
 
         public Game1()
         {
@@ -58,7 +61,7 @@ namespace Game_1
             graphics.ApplyChanges();
             // TODO: Add your initialization logic here
             floor = new Floor(this.graphics.GraphicsDevice);
-            player = new Player();
+            player = new Player(graph);
             game = new RenderTarget2D(
                 GraphicsDevice,
                 GraphicsDevice.PresentationParameters.BackBufferWidth,
@@ -67,10 +70,7 @@ namespace Game_1
                 GraphicsDevice.PresentationParameters.BackBufferFormat,
                 DepthFormat.Depth24);
 
-            enemies.Add(new Enemy() { Position = new Vector2(-20, -20) });
-            enemies.Add(new Enemy() { Position = new Vector2(20, -20) });
-            enemies.Add(new Enemy() { Position = new Vector2(20, 20) });
-            enemies.Add(new Enemy() { Position = new Vector2(-20, 20) });
+            enemies.Add(new Enemy(graph) { Position = new Vector2(-10, 10) });
             base.Initialize();
         }
 
@@ -85,6 +85,7 @@ namespace Game_1
             // TODO: use this.Content to load your game content here
             this.snowmanModel = this.Content.Load<Model>("snowMan");
             this.elf = this.Content.Load<Model>("elf");
+            this.crate = this.Content.Load<Model>("Crate-04");
             effect = this.Content.Load<Effect>("shader");
             postEffect = this.Content.Load<Effect>("postEffect");
             font = this.Content.Load<SpriteFont>("font");
@@ -111,7 +112,8 @@ namespace Game_1
 
             var pp = GraphicsDevice.PresentationParameters;
             renderTarget = new RenderTarget2D(GraphicsDevice, pp.BackBufferWidth, pp.BackBufferHeight, true, GraphicsDevice.DisplayMode.Format, DepthFormat.Depth24);
-
+            crateMatrix = Matrix.CreateScale(2f)* Matrix.CreateTranslation(0, 1, 3);
+            graph.AddBlocade(crate, crateMatrix);
         }
 
         /// <summary>
@@ -226,28 +228,28 @@ namespace Game_1
                 Random random = new Random();
                 for (int i = 0; i < 2; i++)
                 {
-                    var enemy = new Enemy();
+                    var enemy = new Enemy(graph);
                     int val = next % 4;
                     switch (val)
                     {
                         case 0:
                             {
-                                enemy.Position = new Vector2(-20, -20);
+                                enemy.Position = new Vector2(-10, -10);
                             }
                             break;
                         case 1:
                             {
-                                enemy.Position = new Vector2(-20, 20);
+                                enemy.Position = new Vector2(-10, 10);
                             }
                             break;
                         case 2:
                             {
-                                enemy.Position = new Vector2(20, 20);
+                                enemy.Position = new Vector2(10, 10);
                             }
                             break;
                         case 3:
                             {
-                                enemy.Position = new Vector2(20, -20);
+                                enemy.Position = new Vector2(10, -10);
                             }
                             break;
                     }
@@ -334,6 +336,9 @@ namespace Game_1
                 model.Draw();
             }
 
+            // test
+            // snowmanModel.DrawBoundingBox(projection, camera.ViewMatrix, player.Rotation * Matrix.CreateTranslation(player.Position.X, 0, player.Position.Y), GraphicsDevice, Color.Blue);
+
             foreach (var enemy in enemies)
             {
                 foreach (var model in elf.Meshes)
@@ -359,6 +364,16 @@ namespace Game_1
                 }
             }
 
+            foreach (var model in crate.Meshes)
+            {
+
+                var effect = model.Effects[0] as BasicEffect;
+                effect.World = crateMatrix;
+                effect.Projection = projection;
+                effect.View = camera.ViewMatrix;
+                model.Draw();
+            }
+
             foreach (var bullet in bullets)
             {
                 foreach (var model in snowmanModel.Meshes)
@@ -376,6 +391,7 @@ namespace Game_1
                 }
             }
         }
+
 
         public void AddBullet(Vector2 positon, Matrix rotation)
         {

@@ -15,11 +15,14 @@ namespace Game_1.Entities
         float speed = 0.002f;
         bool shooting = false;
 
-        public Player()
+        public Player(Graph graph)
         {
+            this.graph = graph;
             Position = new Vector2();
             Rotation = Matrix.Identity;
         }
+
+        private Graph graph;
 
         public Vector2 Position { get => position; set => position = value; }
         public Matrix Rotation { get => rotation; set => rotation = value; }
@@ -53,14 +56,21 @@ namespace Game_1.Entities
                 move = true;
             }
 
-            if (move && moveVector.Length() != 0)
+            if (move && moveVector.Length() != 0) 
             {
                 moveVector.Normalize();
-                var projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45), 16 / 9, 0.1f, 100f);
-                rotation = Matrix.CreateLookAt(new Vector3(position.X, 0, position.Y), new Vector3(position.X - moveVector.X, 0, position.Y + moveVector.Y), Vector3.Up);
-                rotation.M41 = 0;
-                rotation.M43 = 0;
-                position += moveVector * speed * (float)time.ElapsedGameTime.TotalMilliseconds;
+                if (graph.CanGo(position, position + (moveVector * speed * (float)time.ElapsedGameTime.TotalMilliseconds)))
+                {
+                    var projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45), 16 / 9, 0.1f, 100f);
+                    rotation = Matrix.CreateLookAt(new Vector3(position.X, 0, position.Y), new Vector3(position.X - moveVector.X, 0, position.Y + moveVector.Y), Vector3.Up);
+                    rotation.M41 = 0;
+                    rotation.M43 = 0;
+                    position += moveVector * speed * (float)time.ElapsedGameTime.TotalMilliseconds;
+                }
+                else
+                {
+
+                }
             }
 
             if(keyState.IsKeyDown(Keys.Space))

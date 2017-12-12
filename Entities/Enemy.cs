@@ -17,16 +17,55 @@ namespace Game_1.Entities
         Vector2 hitPos;
         int falls = 1;
         float moveSpeed = 0.001f;
+        Graph graph;
+        List<Vector2> path;
+        Vector2 playerPosition = new Vector2(float.PositiveInfinity, float.PositiveInfinity);
+        Vector2 nextPoint;
+
+        public Enemy(Graph graph)
+        {
+            this.graph = graph;
+        }
 
         public bool Dead { get => dead; set => dead = value; }
         public Vector2 Position { get => position; set => position = value; }
         public Matrix Rotation { get => rotation; set => rotation = value; }
+        
 
         public void Update(GameTime gameTime, Player player)
         {
             if(!Dead)
             {
-                var move = player.Position - this.position;
+                if ((playerPosition - player.Position).LengthSquared() > 1f)
+                {
+                    path = graph.ShortestPath(this.Position, player.Position);
+                    if (path.Count >= 2)
+                    {
+                        path.RemoveAt(path.Count - 1);
+                        path.RemoveAt(0);
+                    }
+
+                    path.Add(player.Position);
+                    nextPoint = path[0];
+                    playerPosition = player.Position;
+                }
+                else
+                {
+                    if((position - nextPoint).Length() < 0.01f)
+                    {
+                        path.Remove(nextPoint);
+                        if(path.Any())
+                        {
+                            nextPoint = path[0];
+                        }
+                        else
+                        {
+                            nextPoint = player.Position;
+                        }
+                    }
+                }
+
+                var move = nextPoint - this.position;
                 move.Normalize();
                 position += move * moveSpeed * (float)gameTime.ElapsedGameTime.TotalMilliseconds;
                 var angle = -(float)Math.Atan2(move.Y, move.X) - MathHelper.PiOver2 ;

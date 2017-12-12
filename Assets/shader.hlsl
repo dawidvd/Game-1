@@ -79,7 +79,7 @@ ShadowMapVertexOutput ShadowMapVertexShaderFunction(VertexShaderInput input)
 
 float4 ShadowMapPixelShaderFunction(ShadowMapVertexOutput input) : COLOR0
 {
-	return input.Position2D.z/input.Position2D.w;
+	return input.Position2D.z;
 }
 
 ShadowSceenVertexOutput ShadowSceenVertexShaderFunction(VertexShaderInput input)

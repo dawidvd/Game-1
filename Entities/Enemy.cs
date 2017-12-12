@@ -17,7 +17,7 @@ namespace Game_1.Entities
         Vector2 hitPos;
         int falls = 1;
         float moveSpeed = 0.001f;
-        Graph graph;
+        public Graph graph {get;set;}
         List<Vector2> path;
         Vector2 playerPosition = new Vector2(float.PositiveInfinity, float.PositiveInfinity);
         Vector2 nextPoint;

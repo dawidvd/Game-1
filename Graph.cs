@@ -63,11 +63,11 @@ namespace Game_1
 
         public void AddBlocade(Model model, Matrix world)
         {
-            var bb = model.GetBoundingBox(world);
-            int xmin = (int)(bb.Min.X/2 + world.M41 + width / 2);
-            int xmax = (int)(bb.Max.X/2 + world.M41 + width / 2 + 1);
-            int ymin = (int)(bb.Min.Y/2 + world.M43 + height / 2);
-            int ymax = (int)(bb.Max.Y/2 + world.M43 + height / 2 + 1);
+            var bb = model.GetBoundingBox(Matrix.Identity);
+            int xmin = (int)Math.Round(bb.Min.X / 2 + world.M41 + width / 2 - 1);
+            int xmax = (int)Math.Round(bb.Max.X / 2 + world.M41 + width / 2);
+            int ymin = (int)Math.Round(bb.Min.Y / 2 + world.M43 + height / 2 - 1);
+            int ymax = (int)Math.Round(bb.Max.Y/2 + world.M43 + height / 2);
 
             xmin = MathHelper.Clamp(xmin, 0, width - 1);
             ymin = MathHelper.Clamp(ymin, 0, height - 1);

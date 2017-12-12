@@ -19,7 +19,7 @@ namespace Game_1.Entities
             Rotation = Matrix.Identity;
         }
 
-        private Graph graph;
+        public Graph graph { get; set; }
 
         public Vector2 Position
         {
@@ -81,7 +81,8 @@ namespace Game_1.Entities
             if (move && moveVector.Length() != 0) 
             {
                 moveVector.Normalize();
-                if (graph.CanGo(position, position + (moveVector * speed * (float)time.ElapsedGameTime.TotalMilliseconds)))
+                Vector2 sped = moveVector * speed * (float)time.ElapsedGameTime.TotalMilliseconds;
+                if (graph.CanGo(position, position + (sped)) && graph.CanGo(position - new Vector2(0.75f, 0.75f), position+sped - new Vector2(0.75f, 0.75f)))
                 {
                     var projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45), 16 / 9, 0.1f, 100f);
                     rotation = Matrix.CreateLookAt(new Vector3(position.X, 0, position.Y), new Vector3(position.X - moveVector.X, 0, position.Y + moveVector.Y), Vector3.Up);

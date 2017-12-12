@@ -40,7 +40,7 @@ namespace Game_1
         bool tilt = true;
         PointSystem pointSystem = new PointSystem();
         Graph graph = new Graph(22, 22, 1);
-        Matrix crateMatrix;
+        Matrix[] crateMatrix = new Matrix[9];
         bool menu = true;
         bool key = false;
         bool inProggress = false;
@@ -128,8 +128,21 @@ namespace Game_1
 
             var pp = GraphicsDevice.PresentationParameters;
             renderTarget = new RenderTarget2D(GraphicsDevice, pp.BackBufferWidth, pp.BackBufferHeight, true, GraphicsDevice.DisplayMode.Format, DepthFormat.Depth24);
-            crateMatrix = Matrix.CreateScale(2f)* Matrix.CreateTranslation(0, 1, 3);
-            graph.AddBlocade(crate, crateMatrix);
+            crateMatrix[0] = Matrix.CreateScale(2f)* Matrix.CreateTranslation(-2, 1, 3);
+            crateMatrix[1] = Matrix.CreateScale(2f)* Matrix.CreateTranslation(0, 1, 4);
+            crateMatrix[2] = Matrix.CreateScale(2f)* Matrix.CreateTranslation(-3, 1, -3);
+
+            crateMatrix[3] = Matrix.CreateScale(2f)* Matrix.CreateTranslation(4, 1, 3);
+            crateMatrix[4] = Matrix.CreateScale(2f)* Matrix.CreateTranslation(2, 1, 0);
+            crateMatrix[5] = Matrix.CreateScale(2f)* Matrix.CreateTranslation(0, 1, 3);
+
+            crateMatrix[6] = Matrix.CreateScale(2f)* Matrix.CreateTranslation(7, 1, 0);
+            crateMatrix[7] = Matrix.CreateScale(2f)* Matrix.CreateTranslation(2, 1, 3);
+            crateMatrix[8] = Matrix.CreateScale(2f)* Matrix.CreateTranslation(5, 1, 2);
+            graph.AddBlocade(crate, crateMatrix[0]);
+            graph.AddBlocade(crate, crateMatrix[1]);
+            graph.AddBlocade(crate, crateMatrix[2]);
+
         }
 
         /// <summary>
@@ -529,14 +542,17 @@ namespace Game_1
                 }
             }
 
-            foreach (var model in crate.Meshes)
+            for(int i = 0; i < 3; i++)
             {
+                foreach (var model in crate.Meshes)
+                {
 
-                var effect = model.Effects[0] as BasicEffect;
-                effect.World = crateMatrix;
-                effect.Projection = projection;
-                effect.View = camera.ViewMatrix;
-                model.Draw();
+                    var effect = model.Effects[0] as BasicEffect;
+                    effect.World = crateMatrix[i + (level -1) % 3 * 3];
+                    effect.Projection = projection;
+                    effect.View = camera.ViewMatrix;
+                    model.Draw();
+                }
             }
 
             foreach (var bullet in bullets)
@@ -573,6 +589,11 @@ namespace Game_1
             bullets.Clear();
             enemies.Clear();
             floor.ChangeColor(1);
+            graph = new Graph(22, 22, 1);
+            graph.AddBlocade(crate, crateMatrix[0]);
+            graph.AddBlocade(crate, crateMatrix[1]);
+            graph.AddBlocade(crate, crateMatrix[2]);
+            player.graph = graph;
             enemies.Add(new Enemy(graph) { Position = new Vector2(-10, 10) });
             gameOver = false;
             level = 1;
@@ -592,6 +613,11 @@ namespace Game_1
             floor.ChangeColor(level);
             enemyCount = 0;
             maxEnemyCount *= 2;
+            graph = new Graph(22, 22, 1);
+            graph.AddBlocade(crate, crateMatrix[0 + (level -1) % 3 * 3]);
+            graph.AddBlocade(crate, crateMatrix[1 + (level - 1) % 3 * 3]);
+            graph.AddBlocade(crate, crateMatrix[2 + (level -1) % 3 * 3]);
+            player.graph = graph;
         }
     }
 }

@@ -28,6 +28,7 @@ namespace Game_1
         Texture2D gameOverTexture;
         Texture2D shadowMap;
         Texture2D keysTexture;
+        Texture2D menuBackground;
         Effect effect;
         Effect postEffect;
         SpriteBatch spriteBatch;
@@ -103,6 +104,7 @@ namespace Game_1
             floor.Texture[2] = this.Content.Load<Texture2D>("grass");
             gameOverTexture = this.Content.Load<Texture2D>("gameOver");
             keysTexture = this.Content.Load<Texture2D>("keys");
+            menuBackground = this.Content.Load<Texture2D>("menu");
             foreach (var mesh in this.snowmanModel.Meshes)
             {
                 foreach (var part in mesh.MeshParts)
@@ -349,15 +351,16 @@ namespace Game_1
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
+            var projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45), 16 / 9, 0.1f, 100f);
+            // TODO: Add your drawing code here
+            Vector3 lightPos = new Vector3(10, 8, 10);
+            var lightsView = Matrix.CreateLookAt(lightPos, new Vector3(-30, 0, -30), Vector3.Up);
+            var lightsProjection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(120), 1f, 1, 1000f);
+            float lightPower = 0.7f;
+
             if (!menu && !key)
             {
                 this.IsMouseVisible = false;
-                var projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45), 16 / 9, 0.1f, 100f);
-                // TODO: Add your drawing code here
-                Vector3 lightPos = new Vector3(10, 8, 10);
-                var lightsView = Matrix.CreateLookAt(lightPos, new Vector3(-30, 0, -30), Vector3.Up);
-                var lightsProjection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(120), 1f, 1, 1000f);
-                float lightPower = 0.7f;
 
                 if (effects)
                 {
@@ -412,6 +415,7 @@ namespace Game_1
                 GraphicsDevice.Clear(Color.Black);
                 this.IsMouseVisible = true;
                 spriteBatch.Begin();
+                spriteBatch.Draw(menuBackground, GraphicsDevice.Viewport.Bounds, Color.White);
                 spriteBatch.DrawString(font, "Game1", new Vector2(GraphicsDevice.Viewport.Width / 2, 0), Color.White);
                 if (inProggress)
                 {
@@ -426,6 +430,38 @@ namespace Game_1
                 GraphicsDevice.BlendState = BlendState.Opaque;
                 GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
+                effect.Parameters["View"].SetValue(Matrix.CreateLookAt(new Vector3(0,0,-10), Vector3.Zero, Vector3.Up));
+                effect.Parameters["Projection"].SetValue(Matrix.CreateOrthographic(10,10,0,100));
+                effect.Parameters["LightPos"].SetValue(new Vector3(0,0, -10));
+                effect.Parameters["LightPower"].SetValue(0.9f);
+
+                foreach (var model in snowmanModel.Meshes)
+                {
+                    var transMatrix = Matrix.CreateTranslation(1, 0, 0);
+
+                    foreach (var part in model.MeshParts)
+                    {
+                        part.Effect.Parameters["World"].SetValue(transMatrix);
+                        part.Effect.Parameters["DeffuseColor"].SetValue(partColor[part]);
+                        part.Effect.Parameters["LightWorldViewProjection"].SetValue(player.Rotation * transMatrix * lightsView * lightsProjection);
+                    }
+
+                    model.Draw();
+                }
+
+                foreach (var model in elf.Meshes)
+                {
+                    Matrix transMatrix = Matrix.CreateTranslation(3, -0.5f,0);
+
+                    foreach (var part in model.MeshParts)
+                    {
+                        part.Effect.Parameters["World"].SetValue(Matrix.CreateRotationY(MathHelper.ToRadians(-45))*transMatrix);
+                        part.Effect.Parameters["DeffuseColor"].SetValue(partColor[part]);
+                        part.Effect.Parameters["LightWorldViewProjection"].SetValue(transMatrix * lightsView * lightsProjection);
+                    }
+
+                    model.Draw();
+                }
             }
             else if(key)
             {

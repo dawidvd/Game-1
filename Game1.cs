@@ -38,6 +38,8 @@ namespace Game_1
         PointSystem pointSystem = new PointSystem();
         Graph graph = new Graph(22, 22, 1);
         Matrix crateMatrix;
+        bool menu = true;
+        bool inProggress = false;
 
         public Game1()
         {
@@ -133,62 +135,106 @@ namespace Game_1
         protected override void Update(GameTime gameTime)
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                Exit();
+                menu = true;
 
             // TODO: Add your update logic here
-
-            player.Update(gameTime, this);
-            foreach (var enemy in enemies)
+            if (menu)
             {
-                enemy.Update(gameTime, player);
-            }
-
-            foreach (var bullet in bullets)
-            {
-               bullet.Update(gameTime);
-            }
-
-            bullets.RemoveAll(x => x.Time <= 0);
-            CheckCollisions();
-
-            var keyState = Keyboard.GetState();
-            if (keyState.IsKeyDown(Keys.M))
-            {
-                if (!mPressed)
+                var state = Mouse.GetState();
+                if(state.LeftButton == ButtonState.Pressed)
                 {
-                    if (tilt)
+                    if(inProggress && state.Position.Y > 70 && state.Position.Y < 140)
                     {
-                        postEffect.CurrentTechnique = postEffect.Techniques[1];
-                        tilt = false;
+                        menu = false;
                     }
-                    else
+                    else if(state.Position.Y > 140)
                     {
-                        postEffect.CurrentTechnique = postEffect.Techniques[0];
-                        tilt = true;
+                        if(state.Position.Y < 210)
+                        {
+                            /// Easy
+                            menu = false;
+                            pointSystem.Multiplier = 1;
+                            inProggress = true;
+                            Restart();
+                        }
+                        else if(state.Position.Y < 280)
+                        {
+                            /// medium
+                            menu = false;
+                            pointSystem.Multiplier = 2;
+                            inProggress = true;
+                            Restart();
+                        }
+                        else if(state.Position.Y < 350)
+                        {
+                            /// hard
+                            menu = false;
+                            pointSystem.Multiplier = 3;
+                            inProggress = true;
+                            Restart();
+                        }
+                        else if(state.Position.Y < 420)
+                        {
+                            Exit();
+                        }
                     }
-
-                    mPressed = true;
                 }
             }
             else
             {
-                mPressed = false;
-            }
-
-            if(keyState.IsKeyDown(Keys.N))
-            {
-                if (!nPressed)
+                player.Update(gameTime, this);
+                foreach (var enemy in enemies)
                 {
-                    effects = !effects;
-                    nPressed = true;
+                    enemy.Update(gameTime, player);
                 }
-            }
-            else
-            {
-                nPressed = false;
-            }
 
-            pointSystem.UpdateScore(gameTime);
+                foreach (var bullet in bullets)
+                {
+                    bullet.Update(gameTime);
+                }
+
+                bullets.RemoveAll(x => x.Time <= 0);
+                CheckCollisions();
+
+                var keyState = Keyboard.GetState();
+                if (keyState.IsKeyDown(Keys.M))
+                {
+                    if (!mPressed)
+                    {
+                        if (tilt)
+                        {
+                            postEffect.CurrentTechnique = postEffect.Techniques[1];
+                            tilt = false;
+                        }
+                        else
+                        {
+                            postEffect.CurrentTechnique = postEffect.Techniques[0];
+                            tilt = true;
+                        }
+
+                        mPressed = true;
+                    }
+                }
+                else
+                {
+                    mPressed = false;
+                }
+
+                if (keyState.IsKeyDown(Keys.N))
+                {
+                    if (!nPressed)
+                    {
+                        effects = !effects;
+                        nPressed = true;
+                    }
+                }
+                else
+                {
+                    nPressed = false;
+                }
+
+                pointSystem.UpdateScore(gameTime);
+            }
             base.Update(gameTime);
         }
 
@@ -267,54 +313,78 @@ namespace Game_1
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            var projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45), 16 / 9, 0.1f, 100f);
-            // TODO: Add your drawing code here
-            Vector3 lightPos = new Vector3(10, 8, 10);
-            var lightsView = Matrix.CreateLookAt(lightPos, new Vector3(-30, 0, -30), Vector3.Up);
-            var lightsProjection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(120), 1f, 1, 1000f);
-            float lightPower = 0.7f;
-
-            if (effects)
+            if (!menu)
             {
-                /// Shadow map
-                GraphicsDevice.SetRenderTarget(renderTarget);
-                GraphicsDevice.Clear(Color.Black);
-                effect.CurrentTechnique = effect.Techniques[1];
-                DrawGame(projection, lightPos, lightsView, lightsProjection, lightPower);
+                this.IsMouseVisible = false;
+                var projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45), 16 / 9, 0.1f, 100f);
+                // TODO: Add your drawing code here
+                Vector3 lightPos = new Vector3(10, 8, 10);
+                var lightsView = Matrix.CreateLookAt(lightPos, new Vector3(-30, 0, -30), Vector3.Up);
+                var lightsProjection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(120), 1f, 1, 1000f);
+                float lightPower = 0.7f;
 
-                GraphicsDevice.SetRenderTarget(game);
-                shadowMap = renderTarget;
-                /// Game
-                GraphicsDevice.Clear(Color.Black);
-                GraphicsDevice.DepthStencilState = new DepthStencilState() { DepthBufferEnable = true };
-                effect.CurrentTechnique = effect.Techniques[2];
-                effect.Parameters["ShadowMap"].SetValue(shadowMap);
-                DrawGame(projection, lightPos, lightsView, lightsProjection, lightPower);
-                GraphicsDevice.SetRenderTarget(null);
-                Texture2D texture2D = game;
-                GraphicsDevice.Clear(Color.Black);
-                spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque,
-                    SamplerState.LinearClamp, DepthStencilState.Default,
-                    RasterizerState.CullNone, postEffect);
-                spriteBatch.Draw(game, GraphicsDevice.PresentationParameters.Bounds, Color.White);
+                if (effects)
+                {
+                    /// Shadow map
+                    GraphicsDevice.SetRenderTarget(renderTarget);
+                    GraphicsDevice.Clear(Color.Black);
+                    effect.CurrentTechnique = effect.Techniques[1];
+                    DrawGame(projection, lightPos, lightsView, lightsProjection, lightPower);
+
+                    GraphicsDevice.SetRenderTarget(game);
+                    shadowMap = renderTarget;
+                    /// Game
+                    GraphicsDevice.Clear(Color.Black);
+                    GraphicsDevice.DepthStencilState = new DepthStencilState() { DepthBufferEnable = true };
+                    effect.CurrentTechnique = effect.Techniques[2];
+                    effect.Parameters["ShadowMap"].SetValue(shadowMap);
+                    DrawGame(projection, lightPos, lightsView, lightsProjection, lightPower);
+                    GraphicsDevice.SetRenderTarget(null);
+                    Texture2D texture2D = game;
+                    GraphicsDevice.Clear(Color.Black);
+                    spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque,
+                        SamplerState.LinearClamp, DepthStencilState.Default,
+                        RasterizerState.CullNone, postEffect);
+                    spriteBatch.Draw(game, GraphicsDevice.PresentationParameters.Bounds, Color.White);
+                    spriteBatch.End();
+                    GraphicsDevice.BlendState = BlendState.Opaque;
+                    GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+                }
+                else
+                {
+                    GraphicsDevice.SetRenderTarget(null);
+                    GraphicsDevice.Clear(Color.Black);
+                    effect.CurrentTechnique = effect.Techniques[0];
+                    DrawGame(projection, lightPos, lightsView, lightsProjection, lightPower);
+                }
+
+                spriteBatch.Begin();
+                spriteBatch.DrawString(font, "x" + pointSystem.KillMultiplier, Vector2.Zero, Color.Red);
+                spriteBatch.DrawString(font, pointSystem.Points.ToString(), new Vector2(GraphicsDevice.Viewport.Width / 2, 0), Color.White);
                 spriteBatch.End();
                 GraphicsDevice.BlendState = BlendState.Opaque;
                 GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             }
             else
             {
-                GraphicsDevice.SetRenderTarget(null);
                 GraphicsDevice.Clear(Color.Black);
-                effect.CurrentTechnique = effect.Techniques[0];
-                DrawGame(projection, lightPos, lightsView, lightsProjection, lightPower);
-            }
+                this.IsMouseVisible = true;
+                spriteBatch.Begin();
+                spriteBatch.DrawString(font, "Game1", new Vector2(GraphicsDevice.Viewport.Width / 2, 0), Color.White);
+                if (inProggress)
+                {
+                    spriteBatch.DrawString(font, "Resume", new Vector2(GraphicsDevice.Viewport.Width / 2, 70), Color.White);
+                }
 
-            spriteBatch.Begin();
-            spriteBatch.DrawString(font, "x" + pointSystem.KillMultiplier, Vector2.Zero, Color.Red);
-            spriteBatch.DrawString(font, pointSystem.Points.ToString(), new Vector2(GraphicsDevice.Viewport.Width/2, 0), Color.White);
-            spriteBatch.End();
-            GraphicsDevice.BlendState = BlendState.Opaque;
-            GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+                spriteBatch.DrawString(font, "Easy", new Vector2(GraphicsDevice.Viewport.Width / 2, 140), Color.White);
+                spriteBatch.DrawString(font, "Medium", new Vector2(GraphicsDevice.Viewport.Width / 2, 210), Color.White);
+                spriteBatch.DrawString(font, "Hard", new Vector2(GraphicsDevice.Viewport.Width / 2, 280), Color.White);
+                spriteBatch.DrawString(font, "Exit", new Vector2(GraphicsDevice.Viewport.Width / 2, 350), Color.White);
+                spriteBatch.End();
+                GraphicsDevice.BlendState = BlendState.Opaque;
+                GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+
+            }
 
             base.Draw(gameTime);
         }
@@ -398,6 +468,16 @@ namespace Game_1
             var bullet = new Bullet();
             bullet.Respawn(positon, rotation);
             bullets.Add(bullet);
+        }
+
+        private void Restart()
+        {
+            pointSystem.Points = 0;
+            pointSystem.KillMultiplier = 1;
+            player.Position = new Vector2();
+            bullets.Clear();
+            enemies.Clear();
+            enemies.Add(new Enemy(graph) { Position = new Vector2(-10, 10) });
         }
     }
 }
